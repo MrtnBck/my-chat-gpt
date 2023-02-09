@@ -5,17 +5,42 @@ import { Configuration, OpenAIApi } from "openai";
 
 dotenv.config();
 
+console.log(process.env.OPENAI_KEY);
+const app = express();
+app.use(cors());
+app.use(express.json());
+
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_KEY,
 });
 
 const openai = new OpenAIApi(configuration);
 
-console.log(process.env.OPENAI_KEY);
-const app = express();
-app.use(cors());
-app.use(express.json());
+app.post("/", async (req, res) => {
+  try {
+    const question = req.body.question;
+
+    const response = openai.createCompletion({
+      //? what are these parameters??
+      model: "text-davinci-003",
+      prompt: `${question}`,
+      max_tokens: 3000,
+      temperature: 0,
+      top_p: 1,
+      n: 1,
+      stream: false,
+      logprobs: null,
+      stop: "\n",
+    });
+
+    res.status(200).send({
+      bot: (await response).data.choices[0].text,
+    });
+  } catch (error) {
+    res.status(500).send(error || "Something went wrong");
+  }
+});
 
 app.listen(8000, () => {
-  console.log(`App is running... `);
+  console.log(`OpenAI server started on http://localhost:8000 `);
 });
