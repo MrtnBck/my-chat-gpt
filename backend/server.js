@@ -20,7 +20,7 @@ app.post("/", async (req, res) => {
   try {
     const question = req.body.question;
 
-    const response = openai.createCompletion({
+    const response = await openai.createCompletion({
       //? what are these parameters??
       model: "text-davinci-003",
       prompt: `${question}`,
@@ -37,10 +37,14 @@ app.post("/", async (req, res) => {
       bot: (await response).data.choices[0].text,
     });
   } catch (error) {
-    res.status(500).send(error || "Something went wrong");
+    if (error) {
+      res.status(500).send(error.response || "Something went wrong");
+    } else {
+      res.status(500).send(error.message || "Something went wrong");
+    }
   }
 });
 
 app.listen(8000, () => {
-  console.log(`OpenAI server started on http://localhost:8000 `);
+  console.log(`OpenAI server started on http://localhost:8000`);
 });
