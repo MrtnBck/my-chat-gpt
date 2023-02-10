@@ -16,31 +16,37 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
-app.post("/", async (req, res) => {
+app.post("/openai/api/completitions", async (req, res) => {
+  console.log("Hello from backend..");
   try {
     const question = req.body.question;
+    console.log(question);
 
     const response = await openai.createCompletion({
       //? what are these parameters??
       model: "text-davinci-003",
-      prompt: `${question}`,
+      prompt: question,
       max_tokens: 3000,
       temperature: 0,
       top_p: 1,
       n: 1,
       stream: false,
       logprobs: null,
-      stop: "\n",
+      //stop: "\n",
     });
+    console.log(`Response: ${response.data.choices[0].text}`);
+    res.status(200).send(response.data.choices[0].text);
 
-    res.status(200).send({
+    /*     res.status(200).send({
       bot: (await response).data.choices[0].text,
-    });
+    }); */
   } catch (error) {
-    if (error) {
-      res.status(500).send(error.response || "Something went wrong");
+    if (error.response) {
+      console.log(
+        `Status Code ${error.response.status}: ${error.response.data.error.message}`
+      );
     } else {
-      res.status(500).send(error.message || "Something went wrong");
+      console.log(error.message);
     }
   }
 });
